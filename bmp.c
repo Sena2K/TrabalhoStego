@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <stdint.h>
 
-// Função para criar um novo arquivo BMP
 int criar_arquivo_bmp(const char *nome_arquivo, size_t largura, size_t altura) {
     FILE *fp = fopen(nome_arquivo, "wb");
     if (!fp) {
@@ -13,16 +12,13 @@ int criar_arquivo_bmp(const char *nome_arquivo, size_t largura, size_t altura) {
         return -errno;
     }
 
-    // Calcular tamanho da linha com padding (cada linha é alinhada a múltiplos de 4 bytes)
     size_t tamanho_linha = (largura * 3 + 3) & ~3;
     size_t tamanho_dados_pixel = tamanho_linha * altura;
 
-    // Calcular tamanho do arquivo
     size_t tamanho_arquivo = sizeof(CabeçalhoBMP) + sizeof(InfoCabecalhoBMP) + tamanho_dados_pixel;
 
-    // Criar e escrever cabeçalhos
     CabeçalhoBMP cabecalho = {
-        .assinatura = 0x4D42, // "BM" em little endian
+        .assinatura = 0x4D42,
         .tamanho_arquivo = tamanho_arquivo,
         .reservado1 = 0,
         .reservado2 = 0,
@@ -50,7 +46,6 @@ int criar_arquivo_bmp(const char *nome_arquivo, size_t largura, size_t altura) {
         return -EIO;
     }
 
-    // Inicializar dados de pixel com zeros
     unsigned char *dados_pixel = calloc(1, tamanho_dados_pixel);
     if (!dados_pixel) {
         fprintf(stderr, "Erro ao alocar memória para dados de pixel\n");
@@ -67,7 +62,6 @@ int criar_arquivo_bmp(const char *nome_arquivo, size_t largura, size_t altura) {
         return -EIO;
     }
 
-    // Flush das mudanças para o disco
     if (fflush(fp) != 0) {
         fprintf(stderr, "Erro ao flush do arquivo BMP: %s\n", strerror(errno));
         fclose(fp);
@@ -78,14 +72,13 @@ int criar_arquivo_bmp(const char *nome_arquivo, size_t largura, size_t altura) {
     return 0;
 }
 
-// Função para ler cabeçalho BMP
 int ler_cabecalho_bmp(FILE *fp, CabeçalhoBMP *cabecalho, InfoCabecalhoBMP *info_cabecalho) {
     if (fread(cabecalho, sizeof(CabeçalhoBMP), 1, fp) != 1) {
         fprintf(stderr, "Erro ao ler cabeçalho BMP: %s\n", strerror(errno));
         return -EIO;
     }
 
-    if (cabecalho->assinatura != 0x4D42) { // "BM" em little endian
+    if (cabecalho->assinatura != 0x4D42) {
         fprintf(stderr, "Assinatura BMP inválida\n");
         return -EINVAL;
     }
@@ -98,7 +91,6 @@ int ler_cabecalho_bmp(FILE *fp, CabeçalhoBMP *cabecalho, InfoCabecalhoBMP *info
     return 0;
 }
 
-// Função para escrever cabeçalho BMP
 int escrever_cabecalho_bmp(FILE *fp, const CabeçalhoBMP *cabecalho, const InfoCabecalhoBMP *info_cabecalho) {
     if (fwrite(cabecalho, sizeof(CabeçalhoBMP), 1, fp) != 1 ||
         fwrite(info_cabecalho, sizeof(InfoCabecalhoBMP), 1, fp) != 1) {
@@ -108,3 +100,4 @@ int escrever_cabecalho_bmp(FILE *fp, const CabeçalhoBMP *cabecalho, const InfoC
 
     return 0;
 }
+
